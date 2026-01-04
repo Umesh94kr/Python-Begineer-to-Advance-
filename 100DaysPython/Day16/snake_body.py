@@ -1,5 +1,9 @@
 from turtle import Turtle
 import random
+import json 
+import os 
+BASE_DIR = os.path.dirname(__file__)
+FILE_PATH = os.path.join(BASE_DIR, "high_score.json")
 
 class SnakePart:
     def __init__(self):
@@ -114,17 +118,24 @@ from turtle import Turtle
 class ScoreBoard:
     def __init__(self):
         self.score = 0
+        self.high_score = 0
         self.pen = Turtle()
         self.pen.hideturtle()
         self.pen.penup()
         self.pen.color("Black")
         self.pen.goto(0, 170)  # top of screen
+        self.get_high_score()
         self.update_score()
+
+    def get_high_score(self):
+        with open(FILE_PATH, 'r') as f:
+            data = json.load(f)
+            self.high_score = int(data["high_score"])
 
     def update_score(self):
         self.pen.clear()
         self.pen.write(
-            f"Score: {self.score}",
+            f"Score: {self.score} High Score: {self.high_score}",
             align="center",
             font=("Arial", 16, "bold")
         )
@@ -134,6 +145,11 @@ class ScoreBoard:
         self.update_score()
 
     def game_over(self):
+        if self.score > self.high_score:
+            self.high_score = self.score 
+        with open(FILE_PATH, "w") as f:
+            json.dump({"high_score": self.high_score}, f, indent=4)
+    
         self.pen.goto(0, 0)
         self.pen.write(
             "GAME OVER",
