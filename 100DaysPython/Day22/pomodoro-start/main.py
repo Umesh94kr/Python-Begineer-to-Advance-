@@ -8,24 +8,59 @@ FONT_NAME = "Courier"
 WORK_MIN = 25
 SHORT_BREAK_MIN = 5
 LONG_BREAK_MIN = 20
+reps=1
+is_start=True
 
 # ---------------------------- TIMER RESET ------------------------------- # 
+def reset_timer():
+    title_label.config(text="Timer", fg=GREEN)
+    global is_start
+    is_start=False
+    count=0
+    canvas.itemconfig(timer_text, text=f"00:00")
 
 # ---------------------------- TIMER MECHANISM ------------------------------- # 
 def start_timer():
-    count_down(10)
-
-def reset_timer():
-    count=0
-    canvas.itemconfig(timer_text, text=count)
+    global is_start 
+    global reps
+    if is_start == False:
+        is_start = True 
+        reps = 1
+    
+    if reps%2 == 0 and reps < 8:
+        title_label.config(text="BREAK", fg=RED)
+        count_down(minutes=5, seconds=0)
+        reps += 1
+    elif reps%2 != 0:
+        title_label.config(text="Work", fg=GREEN)
+        count_down(minutes=WORK_MIN, seconds=0)
+        reps += 1
+    elif reps == 8:
+        title_label.config(text="BREAK", fg=RED)
+        count_down(minutes=20, seconds=0)
+    else:
+        print(f"Your session ended!")
 
 # ---------------------------- COUNTDOWN MECHANISM ------------------------------- # 
 import time 
 
-def count_down(count):
-    canvas.itemconfig(timer_text, text=count)
-    if count > 0:
-        window.after(1000, count_down, count-1)
+def count_down(minutes, seconds):
+    global is_start
+    if is_start:
+        if int(seconds / 10) != 0:
+            text = f"{minutes}:{seconds}"
+        elif int(seconds/10) == 0:
+            text = f"{minutes}:0{seconds}"
+        else:
+            text = f"{minutes}:{seconds}"
+        canvas.itemconfig(timer_text, text=text)
+        if minutes > 0 or (minutes == 0 and seconds > 0):
+            if seconds > 0:
+                window.after(1000, count_down, minutes, seconds-1)
+            if seconds == 0:
+                window.after(1000, count_down, minutes-1, 59)
+        else:
+            start_timer()
 
 # ---------------------------- UI SETUP ------------------------------- #
 from tkinter import * 
