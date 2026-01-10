@@ -1,6 +1,7 @@
 from tkinter import * 
 from tkinter import messagebox
 import random
+import json
 import os
 BASE_DIR = os.path.dirname(__file__)
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
@@ -97,10 +98,17 @@ def random_password():
 
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 def save_details():
-    DATA_FILE = os.path.join(BASE_DIR, 'data_file.txt')
+    DATA_FILE = os.path.join(BASE_DIR, 'data_json.json')
     email = email_input.get()
     website = website_input.get()
     password = password_var.get()
+
+    new_data = {
+        website : {
+            "email" : email,
+            "password" : password
+        }
+    }
 
     if not email or not website or not password:
         messagebox.showwarning(title="Empty Fields", message=f"Some fields are empty. Please fill them and then submit!")
@@ -109,9 +117,25 @@ def save_details():
     is_ok = messagebox.askyesno(title="Saving Data", message=f"Do you really want to save the data?\n Email : {email}\n Website : {website}\n Password : {password}")
 
     if is_ok:
-        with open(DATA_FILE, 'a') as f:
-            f.write(f"\nWebsite : {str(website)}, Username : {str(email)}, Password : {password} ")
-        
+        # Step 1: Load existing data
+
+        if os.path.exists(DATA_FILE):
+            with open(DATA_FILE, "r") as file:
+                data = json.load(file)
+        else:
+            data = {}
+
+        # Step 2: Update data
+        data.update(new_data)
+
+        # Step 3: Write back to file
+        try:
+            with open(DATA_FILE, "w") as file:
+                json.dump(data, file, indent=4)
+        except Exception as e:
+            print(f"File not found : {e}")
+
+    
         # once details are saved make reset all the inputs 
         website_input.delete(0, END)
         email_input.delete(0, END)
