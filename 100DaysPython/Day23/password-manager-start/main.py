@@ -118,28 +118,50 @@ def save_details():
 
     if is_ok:
         # Step 1: Load existing data
-
-        if os.path.exists(DATA_FILE):
+        try:
             with open(DATA_FILE, "r") as file:
                 data = json.load(file)
-        else:
-            data = {}
-
+        except FileNotFoundError as e:
+            print(f"File : {e} not found.")
+            print("creating new file")
+            with open(DATA_FILE, "w") as file:
+                data = {}
+                json.dump(data, file)
+        
         # Step 2: Update data
         data.update(new_data)
 
         # Step 3: Write back to file
-        try:
-            with open(DATA_FILE, "w") as file:
-                json.dump(data, file, indent=4)
-        except Exception as e:
-            print(f"File not found : {e}")
-
+        with open(DATA_FILE, "w") as file:
+            json.dump(data, file, indent=4)
     
         # once details are saved make reset all the inputs 
         website_input.delete(0, END)
         email_input.delete(0, END)
         password_var.set("")
+
+def search_data():
+    DATA_FILE = os.path.join(BASE_DIR, 'data_json.json')
+
+    try:
+        with open(DATA_FILE, 'r') as file:
+            data = json.load(file)
+    except Exception as e:
+        print(f"File not found : {e}")
+        with open(DATA_FILE, "w") as file:
+                data = {}
+                json.dump(data, file)
+    
+    website_name = website_input.get()
+    try:
+        details = data[website_name]
+    except KeyError as e:
+        print(f"This website not exists for you : {e}")
+        messagebox.showinfo(title="Website pasword", message=f"This website not exists. for you {website_name}")
+    else:
+        messagebox.showinfo(title="Website pasword", message=f"Email/Username : {details['email']},\n Password : {details['password']}")
+
+
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -160,6 +182,10 @@ website.grid(row=1, column=0)
 
 website_input = Entry()
 website_input.grid(column=1, row=1)
+
+# search button
+save_button = Button(text="Search", command=search_data, width=20)
+save_button.grid(row=1, column=2)
 
 # input block 2
 email = Label(text="Email")
